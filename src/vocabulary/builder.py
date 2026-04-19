@@ -115,6 +115,71 @@ class VocabularyBuilder:
         
         return words
     
+    def get_vocabulary_stats(self) -> Dict[str, int]:
+        """
+        Get statistics about the current vocabulary.
+        
+        Returns:
+            Dict[str, int]: Dictionary containing vocabulary statistics
+        """
+        return {
+            'vocab_size': self.vocab_size,
+            'max_vocab_size': self.max_vocab_size,
+            'total_word_count': sum(self.word_counts.values()) if self.word_counts else 0,
+            'unique_words_in_corpus': len(self.word_counts) if self.word_counts else 0,
+            'words_mapped_to_unk': max(0, len(self.word_counts) - (self.vocab_size - 1)) if self.word_counts else 0
+        }
+    
+    def get_word_frequency(self, word: str) -> int:
+        """
+        Get frequency count of a word in the original corpus.
+        
+        Args:
+            word (str): Word to look up
+            
+        Returns:
+            int: Frequency count of word in corpus, 0 if not found
+        """
+        return self.word_counts.get(word, 0)
+    
+    def is_unknown_word(self, word: str) -> bool:
+        """
+        Check if a word would be mapped to UNK token.
+        
+        Args:
+            word (str): Word to check
+            
+        Returns:
+            bool: True if word is not in vocabulary (maps to UNK)
+        """
+        return word not in self.word_to_idx or word == self.unk_token
+    
+    def convert_text_to_indices(self, text: str) -> List[int]:
+        """
+        Convert text to list of vocabulary indices.
+        
+        Args:
+            text (str): Text to convert
+            
+        Returns:
+            List[int]: List of vocabulary indices
+        """
+        words = self._tokenize_text(text)
+        return [self.get_word_index(word) for word in words]
+    
+    def convert_indices_to_text(self, indices: List[int]) -> str:
+        """
+        Convert list of vocabulary indices back to text.
+        
+        Args:
+            indices (List[int]): List of vocabulary indices
+            
+        Returns:
+            str: Reconstructed text
+        """
+        words = [self.get_word_from_index(idx) for idx in indices]
+        return ' '.join(words)
+    
     def get_word_index(self, word: str) -> int:
         """
         Get index for word, return UNK index if word not in vocabulary.
