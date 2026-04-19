@@ -115,6 +115,71 @@ class VocabularyBuilder:
         
         return words
     
+    def get_vocabulary_stats(self) -> Dict[str, int]:
+        """
+        Get statistics about the current vocabulary.
+        
+        Returns:
+            Dict[str, int]: Dictionary containing vocabulary statistics
+        """
+        return {
+            'vocab_size': self.vocab_size,
+            'max_vocab_size': self.max_vocab_size,
+            'total_word_count': sum(self.word_counts.values()) if self.word_counts else 0,
+            'unique_words_in_corpus': len(self.word_counts) if self.word_counts else 0,
+            'words_mapped_to_unk': max(0, len(self.word_counts) - (self.vocab_size - 1)) if self.word_counts else 0
+        }
+    
+    def get_word_frequency(self, word: str) -> int:
+        """
+        Get frequency count of a word in the original corpus.
+        
+        Args:
+            word (str): Word to look up
+            
+        Returns:
+            int: Frequency count of word in corpus, 0 if not found
+        """
+        return self.word_counts.get(word, 0)
+    
+    def is_unknown_word(self, word: str) -> bool:
+        """
+        Check if a word would be mapped to UNK token.
+        
+        Args:
+            word (str): Word to check
+            
+        Returns:
+            bool: True if word is not in vocabulary (maps to UNK)
+        """
+        return word not in self.word_to_idx or word == self.unk_token
+    
+    def convert_text_to_indices(self, text: str) -> List[int]:
+        """
+        Convert text to list of vocabulary indices.
+        
+        Args:
+            text (str): Text to convert
+            
+        Returns:
+            List[int]: List of vocabulary indices
+        """
+        words = self._tokenize_text(text)
+        return [self.get_word_index(word) for word in words]
+    
+    def convert_indices_to_text(self, indices: List[int]) -> str:
+        """
+        Convert list of vocabulary indices back to text.
+        
+        Args:
+            indices (List[int]): List of vocabulary indices
+            
+        Returns:
+            str: Reconstructed text
+        """
+        words = [self.get_word_from_index(idx) for idx in indices]
+        return ' '.join(words)
+    
     def get_word_index(self, word: str) -> int:
         """
         Get index for word, return UNK index if word not in vocabulary.
@@ -149,8 +214,21 @@ class VocabularyBuilder:
         Raises:
             IOError: If file cannot be written
         """
-        # Implementation will be added in next task
-        pass
+        try:
+            vocab_data = {
+                'max_vocab_size': self.max_vocab_size,
+                'unk_token': self.unk_token,
+                'word_to_idx': self.word_to_idx,
+                'idx_to_word': {str(k): v for k, v in self.idx_to_word.items()},  # Convert int keys to strings for JSON
+                'word_counts': self.word_counts,
+                'vocab_size': self.vocab_size
+            }
+            
+            with open(path, 'w', encoding='utf-8') as file:
+                json.dump(vocab_data, file, indent=2, ensure_ascii=False)
+                
+        except IOError as e:
+            raise IOError(f"Error saving vocabulary to {path}: {e}")
     
     def load_vocabulary(self, path: str) -> None:
         """
@@ -163,8 +241,23 @@ class VocabularyBuilder:
             FileNotFoundError: If vocabulary file does not exist
             json.JSONDecodeError: If file contains invalid JSON
         """
-        # Implementation will be added in next task
-        pass
+        try:
+            with open(path, 'r', encoding='utf-8') as file:
+                vocab_data = json.load(file)
+            
+            # Restore vocabulary attributes
+            self.max_vocab_size = vocab_data['max_vocab_size']
+            self.unk_token = vocab_data['unk_token']
+            self.word_to_idx = vocab_data['word_to_idx']
+            self.idx_to_word = {int(k): v for k, v in vocab_data['idx_to_word'].items()}  # Convert string keys back to int
+            self.word_counts = vocab_data['word_counts']
+            
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Vocabulary file not found: {path}")
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(f"Invalid JSON in vocabulary file {path}: {e}")
+        except KeyError as e:
+            raise ValueError(f"Missing required field in vocabulary file {path}: {e}")
     
     @property
     def vocab_size(self) -> int:
