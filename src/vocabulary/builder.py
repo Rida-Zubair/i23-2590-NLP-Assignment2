@@ -62,8 +62,58 @@ class VocabularyBuilder:
             FileNotFoundError: If corpus file does not exist
             IOError: If corpus file cannot be read
         """
-        # Implementation will be added in next task
-        pass
+        try:
+            # Read corpus file
+            with open(corpus_path, 'r', encoding='utf-8') as file:
+                corpus_text = file.read()
+            
+            # Tokenize entire corpus
+            all_words = self._tokenize_text(corpus_text)
+            
+            # Count word frequencies
+            self.word_counts = Counter(all_words)
+            
+            # Select top max_vocab_size - 1 words (reserve 1 slot for UNK)
+            most_common_words = self.word_counts.most_common(self.max_vocab_size - 1)
+            
+            # Build word-to-index mappings (UNK already at index 0)
+            for idx, (word, count) in enumerate(most_common_words, start=1):
+                self.word_to_idx[word] = idx
+                self.idx_to_word[idx] = word
+                
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Corpus file not found: {corpus_path}")
+        except IOError as e:
+            raise IOError(f"Error reading corpus file {corpus_path}: {e}")
+    
+    def _tokenize_text(self, text: str) -> List[str]:
+        """
+        Tokenize text into words using basic preprocessing.
+        
+        Applies the following preprocessing steps:
+        1. Convert to lowercase
+        2. Split on whitespace
+        3. Remove punctuation and special characters
+        4. Filter out empty strings
+        
+        Args:
+            text (str): Raw text to tokenize
+            
+        Returns:
+            List[str]: List of tokenized words
+        """
+        import re
+        
+        # Convert to lowercase
+        text = text.lower()
+        
+        # Remove punctuation and special characters, keep only alphanumeric and spaces
+        text = re.sub(r'[^a-zA-Z0-9\s]', '', text)
+        
+        # Split on whitespace and filter empty strings
+        words = [word.strip() for word in text.split() if word.strip()]
+        
+        return words
     
     def get_word_index(self, word: str) -> int:
         """
