@@ -50,6 +50,9 @@ class DocumentProcessor:
         """
         Load corpus from file and return list of documents.
         
+        Assumes each line in the file is a separate document.
+        Handles different text encodings gracefully.
+        
         Args:
             file_path (str): Path to corpus file
             
@@ -60,12 +63,39 @@ class DocumentProcessor:
             FileNotFoundError: If corpus file does not exist
             IOError: If file cannot be read
         """
-        # Implementation will be added in next task
-        pass
+        if not os.path.exists(file_path):
+            raise FileNotFoundError(f"Corpus file not found: {file_path}")
+        
+        documents = []
+        encodings_to_try = ['utf-8', 'utf-16', 'latin-1', 'cp1252']
+        
+        for encoding in encodings_to_try:
+            try:
+                with open(file_path, 'r', encoding=encoding) as file:
+                    for line_num, line in enumerate(file, 1):
+                        line = line.strip()
+                        if line:  # Skip empty lines
+                            documents.append(line)
+                break  # Successfully read with this encoding
+                
+            except UnicodeDecodeError:
+                if encoding == encodings_to_try[-1]:  # Last encoding failed
+                    raise IOError(f"Could not decode file {file_path} with any supported encoding")
+                continue  # Try next encoding
+            except IOError as e:
+                raise IOError(f"Error reading corpus file {file_path}: {e}")
+        
+        if not documents:
+            raise IOError(f"No valid documents found in corpus file: {file_path}")
+            
+        return documents
     
     def process_corpus(self, corpus_path: str) -> List[List[int]]:
         """
         Process entire corpus into token indices using vocabulary.
+        
+        Loads corpus, tokenizes each document, and converts to vocabulary indices.
+        Handles documents with all UNK tokens by keeping them (they may still be useful).
         
         Args:
             corpus_path (str): Path to corpus file
@@ -77,8 +107,19 @@ class DocumentProcessor:
             FileNotFoundError: If corpus file does not exist
             IOError: If file cannot be read
         """
-        # Implementation will be added in next task
-        pass
+        # Load documents from corpus file
+        documents = self.load_corpus(corpus_path)
+        
+        # Convert each document to token indices
+        processed_docs = []
+        for doc in documents:
+            doc_indices = self.process_document(doc)
+            
+            # Keep all documents, even if they contain only UNK tokens
+            # This preserves document count for matrix dimensions
+            processed_docs.append(doc_indices)
+        
+        return processed_docs
     
     def process_document(self, text: str) -> List[int]:
         """
