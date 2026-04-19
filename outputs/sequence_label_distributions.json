@@ -1,0 +1,62 @@
+{
+  "pos_train": {
+    "NOUN": 4449,
+    "VERB": 627,
+    "CONJ": 800,
+    "PRON": 1144,
+    "DET": 153,
+    "ADV": 329,
+    "PUNC": 161,
+    "NUM": 70,
+    "POST": 1074,
+    "ADJ": 38,
+    "UNK": 7
+  },
+  "pos_val": {
+    "VERB": 134,
+    "POST": 236,
+    "ADJ": 7,
+    "NOUN": 879,
+    "PRON": 212,
+    "CONJ": 168,
+    "ADV": 70,
+    "PUNC": 33,
+    "DET": 39,
+    "NUM": 15,
+    "UNK": 3
+  },
+  "pos_test": {
+    "PRON": 218,
+    "POST": 231,
+    "NOUN": 965,
+    "ADV": 56,
+    "CONJ": 156,
+    "NUM": 17,
+    "VERB": 131,
+    "ADJ": 10,
+    "PUNC": 21,
+    "DET": 39,
+    "UNK": 1
+  },
+  "ner_train": {
+    "O": 8625,
+    "B-MISC": 29,
+    "B-LOC": 44,
+    "B-ORG": 98,
+    "B-PER": 56
+  },
+  "ner_val": {
+    "O": 1766,
+    "B-PER": 7,
+    "B-LOC": 4,
+    "B-MISC": 8,
+    "B-ORG": 11
+  },
+  "ner_test": {
+    "O": 1788,
+    "B-LOC": 14,
+    "B-ORG": 29,
+    "B-PER": 6,
+    "B-MISC": 8
+  }
+}
