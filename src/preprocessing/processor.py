@@ -94,6 +94,9 @@ class DocumentProcessor:
         """
         Process entire corpus into token indices using vocabulary.
         
+        Loads corpus, tokenizes each document, and converts to vocabulary indices.
+        Handles documents with all UNK tokens by keeping them (they may still be useful).
+        
         Args:
             corpus_path (str): Path to corpus file
             
@@ -104,8 +107,19 @@ class DocumentProcessor:
             FileNotFoundError: If corpus file does not exist
             IOError: If file cannot be read
         """
-        # Implementation will be added in next task
-        pass
+        # Load documents from corpus file
+        documents = self.load_corpus(corpus_path)
+        
+        # Convert each document to token indices
+        processed_docs = []
+        for doc in documents:
+            doc_indices = self.process_document(doc)
+            
+            # Keep all documents, even if they contain only UNK tokens
+            # This preserves document count for matrix dimensions
+            processed_docs.append(doc_indices)
+        
+        return processed_docs
     
     def process_document(self, text: str) -> List[int]:
         """
