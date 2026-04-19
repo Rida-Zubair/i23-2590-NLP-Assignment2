@@ -214,8 +214,21 @@ class VocabularyBuilder:
         Raises:
             IOError: If file cannot be written
         """
-        # Implementation will be added in next task
-        pass
+        try:
+            vocab_data = {
+                'max_vocab_size': self.max_vocab_size,
+                'unk_token': self.unk_token,
+                'word_to_idx': self.word_to_idx,
+                'idx_to_word': {str(k): v for k, v in self.idx_to_word.items()},  # Convert int keys to strings for JSON
+                'word_counts': self.word_counts,
+                'vocab_size': self.vocab_size
+            }
+            
+            with open(path, 'w', encoding='utf-8') as file:
+                json.dump(vocab_data, file, indent=2, ensure_ascii=False)
+                
+        except IOError as e:
+            raise IOError(f"Error saving vocabulary to {path}: {e}")
     
     def load_vocabulary(self, path: str) -> None:
         """
@@ -228,8 +241,23 @@ class VocabularyBuilder:
             FileNotFoundError: If vocabulary file does not exist
             json.JSONDecodeError: If file contains invalid JSON
         """
-        # Implementation will be added in next task
-        pass
+        try:
+            with open(path, 'r', encoding='utf-8') as file:
+                vocab_data = json.load(file)
+            
+            # Restore vocabulary attributes
+            self.max_vocab_size = vocab_data['max_vocab_size']
+            self.unk_token = vocab_data['unk_token']
+            self.word_to_idx = vocab_data['word_to_idx']
+            self.idx_to_word = {int(k): v for k, v in vocab_data['idx_to_word'].items()}  # Convert string keys back to int
+            self.word_counts = vocab_data['word_counts']
+            
+        except FileNotFoundError:
+            raise FileNotFoundError(f"Vocabulary file not found: {path}")
+        except json.JSONDecodeError as e:
+            raise json.JSONDecodeError(f"Invalid JSON in vocabulary file {path}: {e}")
+        except KeyError as e:
+            raise ValueError(f"Missing required field in vocabulary file {path}: {e}")
     
     @property
     def vocab_size(self) -> int:
