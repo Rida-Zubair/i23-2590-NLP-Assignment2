@@ -1,0 +1,2 @@
+# This file ensures the embeddings directory is tracked by git
+# Generated TF-IDF matrices and other embeddings will be saved here
